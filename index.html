@@ -3,69 +3,709 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pius B. Henry - Creator & Bot Developer</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>body { font-family: system-ui; }</style>
+  <title>Mastermind — Creator & Bot Developer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050507;
+      --surface: #0c0c10;
+      --card: #0f0f14;
+      --border: rgba(0, 255, 140, 0.12);
+      --green: #00ff8c;
+      --green-dim: rgba(0, 255, 140, 0.07);
+      --green-glow: rgba(0, 255, 140, 0.25);
+      --text: #d4d4d8;
+      --muted: #52525b;
+      --mono: 'Share Tech Mono', monospace;
+      --display: 'Bebas Neue', sans-serif;
+      --body: 'Rajdhani', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      overflow-x: hidden;
+    }
+
+    /* ── SCANLINE OVERLAY ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.06) 2px,
+        rgba(0,0,0,0.06) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--green); border-radius: 2px; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 20px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(5,5,7,0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--green);
+      letter-spacing: 0.05em;
+    }
+    .nav-logo span { color: var(--muted); }
+
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-links a::before {
+      content: '> ';
+      color: var(--green);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::before { opacity: 1; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 120px 48px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background grid */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+    }
+
+    /* Glow blob */
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,255,140,0.05) 0%, transparent 70%);
+      top: -100px; right: -100px;
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--green);
+      letter-spacing: 0.15em;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeSlide 0.8s 0.2s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    .hero-tag::before { content: '// '; opacity: 0.5; }
+
+    .hero-name {
+      font-family: var(--display);
+      font-size: clamp(5rem, 15vw, 14rem);
+      line-height: 0.88;
+      letter-spacing: 0.02em;
+      color: #fff;
+      position: relative;
+      opacity: 0;
+      animation: fadeSlide 1s 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+
+    /* Glitch effect */
+    .hero-name::before,
+    .hero-name::after {
+      content: 'MASTERMIND';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+    }
+    .hero-name::before {
+      color: #0ff;
+      clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+      animation: glitch1 4s 2s infinite;
+      opacity: 0.4;
+    }
+    .hero-name::after {
+      color: #f0f;
+      clip-path: polygon(0 60%, 100% 60%, 100% 75%, 0 75%);
+      animation: glitch2 4s 2.5s infinite;
+      opacity: 0.3;
+    }
+
+    @keyframes glitch1 {
+      0%, 94%, 100% { transform: translate(0); opacity: 0; }
+      95% { transform: translate(-3px, 1px); opacity: 0.4; }
+      96% { transform: translate(3px, -1px); opacity: 0.4; }
+      97% { transform: translate(0); opacity: 0; }
+    }
+    @keyframes glitch2 {
+      0%, 92%, 100% { transform: translate(0); opacity: 0; }
+      93% { transform: translate(4px, 2px); opacity: 0.3; }
+      94% { transform: translate(-4px, -2px); opacity: 0.3; }
+      95% { transform: translate(0); opacity: 0; }
+    }
+
+    .hero-sub {
+      margin-top: 32px;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      opacity: 0;
+      animation: fadeSlide 1s 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    .hero-sub .hl { color: var(--green); }
+
+    .hero-cta {
+      margin-top: 48px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeSlide 1s 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+
+    .btn {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 14px 32px;
+      text-decoration: none;
+      border: 1px solid var(--green);
+      color: var(--green);
+      background: transparent;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--green);
+      transform: translateX(-101%);
+      transition: transform 0.25s ease;
+    }
+    .btn:hover { color: var(--bg); }
+    .btn:hover::before { transform: translateX(0); }
+    .btn span { position: relative; z-index: 1; }
+
+    .btn-ghost {
+      border-color: var(--muted);
+      color: var(--muted);
+    }
+    .btn-ghost::before { background: var(--muted); }
+    .btn-ghost:hover { color: var(--bg); }
+
+    /* Floating terminal */
+    .hero-terminal {
+      position: absolute;
+      right: 48px;
+      bottom: 80px;
+      width: 320px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeIn 1s 1.2s forwards;
+    }
+    .terminal-bar {
+      background: var(--surface);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: var(--green); }
+    .terminal-title { color: var(--muted); margin-left: 8px; font-size: 0.65rem; }
+    .terminal-body { padding: 18px 14px; line-height: 2; }
+    .t-line { color: var(--muted); }
+    .t-green { color: var(--green); }
+    .t-white { color: #fff; }
+    .t-cursor {
+      display: inline-block;
+      width: 8px; height: 14px;
+      background: var(--green);
+      vertical-align: middle;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    /* ── SECTION SHARED ── */
+    section { padding: 100px 48px; }
+
+    .section-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      color: var(--green);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .section-eyebrow::before { content: '// '; opacity: 0.5; }
+
+    .section-title {
+      font-family: var(--display);
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      line-height: 1;
+      letter-spacing: 0.04em;
+      color: #fff;
+      margin-bottom: 60px;
+    }
+
+    /* ── PROJECTS ── */
+    #projects { background: var(--surface); }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2px;
+    }
+
+    .project-card {
+      background: var(--card);
+      padding: 40px;
+      border: 1px solid transparent;
+      transition: border-color 0.3s, transform 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 0;
+      background: var(--green);
+      transition: height 0.4s ease;
+    }
+    .project-card:hover::before { height: 100%; }
+    .project-card:hover { border-color: var(--border); transform: translateY(-2px); }
+
+    .project-num {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--green);
+      opacity: 0.6;
+      margin-bottom: 20px;
+    }
+    .project-name {
+      font-family: var(--display);
+      font-size: 1.8rem;
+      letter-spacing: 0.05em;
+      color: #fff;
+      margin-bottom: 14px;
+      line-height: 1.1;
+    }
+    .project-desc {
+      font-size: 0.92rem;
+      color: var(--muted);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+    .project-tag {
+      display: inline-block;
+      margin-top: 24px;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      color: var(--green);
+      text-transform: uppercase;
+    }
+
+    /* ── BOTS ── */
+    #bots { background: var(--bg); }
+
+    .bots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .bot-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.3s, border-color 0.3s;
+    }
+    .bot-card:hover {
+      border-color: rgba(0,255,140,0.35);
+      box-shadow: 0 0 40px rgba(0,255,140,0.06);
+    }
+    .bot-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(0,255,140,0.05), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .bot-card:hover::after { opacity: 1; }
+
+    .bot-icon {
+      width: 48px; height: 48px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+    .bot-platform {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .bot-name {
+      font-family: var(--display);
+      font-size: 2rem;
+      letter-spacing: 0.05em;
+      color: var(--green);
+      margin-bottom: 10px;
+    }
+    .bot-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 28px;
+      font-weight: 300;
+    }
+
+    /* ── CONTACT ── */
+    #contact {
+      background: var(--surface);
+      text-align: center;
+    }
+
+    .contact-inner {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .contact-lead {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 2;
+      margin-bottom: 60px;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2px;
+      margin-bottom: 60px;
+    }
+
+    .contact-item {
+      background: var(--card);
+      padding: 28px;
+      border: 1px solid var(--border);
+      text-align: left;
+      transition: border-color 0.3s;
+    }
+    .contact-item:hover { border-color: rgba(0,255,140,0.3); }
+
+    .contact-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--green);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      opacity: 0.7;
+    }
+    .contact-value {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--text);
+      word-break: break-all;
+    }
+    .contact-value a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .contact-value a:hover { color: var(--green); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--bg);
+      padding: 28px 48px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: gap;
+    }
+    .footer-left {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .footer-left span { color: var(--green); }
+    .footer-right {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* Observe-based reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 700px) {
+      nav { padding: 16px 20px; }
+      .nav-links { gap: 20px; }
+      .hero { padding: 100px 20px 60px; }
+      .hero-terminal { display: none; }
+      section { padding: 70px 20px; }
+      footer { padding: 20px; flex-direction: column; gap: 8px; text-align: center; }
+    }
+  </style>
 </head>
-<body class="bg-zinc-950 text-white">
-  <nav class="bg-black p-4 sticky top-0">
-    <div class="max-w-4xl mx-auto flex justify-between items-center">
-      <h1 class="text-2xl font-bold">Pius B. Henry</h1>
-      <div class="space-x-6">
-        <a href="#projects" class="hover:text-emerald-400">Projects</a>
-        <a href="#bots" class="hover:text-emerald-400">My Bots</a>
-        <a href="#contact" class="hover:text-emerald-400">Contact</a>
-      </div>
-    </div>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo"><span>~ </span>mastermind<span>.dev</span></div>
+    <ul class="nav-links">
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#bots">Bots</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
   </nav>
 
-  <section class="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-900 to-black">
-    <div class="text-center max-w-2xl px-6">
-      <h2 class="text-6xl font-bold mb-4">Hi, I'm <span class="text-emerald-400">Pius B. Henry</span></h2>
-      <p class="text-2xl text-zinc-400 mb-8">Building cool stuff • Bots • Projects • Ideas</p>
-      <a href="#projects" class="bg-emerald-500 hover:bg-emerald-600 px-8 py-4 rounded-full text-lg font-semibold">See my work ↓</a>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <p class="hero-tag">init portfolio — v2.0</p>
+    <h1 class="hero-name">MASTERMIND</h1>
+    <p class="hero-sub">
+      <span class="hl">Creator</span> &nbsp;·&nbsp; <span class="hl">Bot Developer</span> &nbsp;·&nbsp; Building from <span class="hl">Termux</span>
+    </p>
+    <div class="hero-cta">
+      <a href="#projects" class="btn"><span>View Projects</span></a>
+      <a href="#contact" class="btn btn-ghost"><span>Get in Touch</span></a>
+    </div>
+
+    <!-- Floating terminal -->
+    <div class="hero-terminal">
+      <div class="terminal-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <span class="terminal-title">bash — mastermind</span>
+      </div>
+      <div class="terminal-body">
+        <div class="t-line">$ whoami</div>
+        <div class="t-white">mastermind</div>
+        <div class="t-line">$ status</div>
+        <div class="t-green">► building cool stuff...</div>
+        <div class="t-line">$ skills</div>
+        <div class="t-white">bots, automation, ideas</div>
+        <div class="t-line">$ <span class="t-cursor"></span></div>
+      </div>
     </div>
   </section>
 
-  <section id="projects" class="max-w-4xl mx-auto py-20 px-6">
-    <h2 class="text-4xl font-bold mb-12 text-center">My Projects</h2>
-    <div class="grid md:grid-cols-2 gap-8">
-      <!-- Add your projects here later -->
-      <div class="bg-zinc-900 p-6 rounded-2xl">
-        <h3 class="text-xl font-semibold mb-2">Project 1 Intelligent bot with memory (coming soon)</h3>
-        <p class="text-zinc-400">Its fun, casual and intelligent. It can even remember conversations</p>
+  <!-- PROJECTS -->
+  <section id="projects">
+    <p class="section-eyebrow reveal">work</p>
+    <h2 class="section-title reveal">My Projects</h2>
+
+    <div class="projects-grid">
+      <div class="project-card reveal">
+        <div class="project-num">01 — featured</div>
+        <div class="project-name">Intelligent Bot with Memory</div>
+        <p class="project-desc">Fun, casual and highly intelligent. It can remember past conversations and use that context to give smarter, more personal responses over time.</p>
+        <span class="project-tag">Coming Soon</span>
       </div>
-      <div class="bg-zinc-900 p-6 rounded-2xl">
-        <h3 class="text-xl font-semibold mb-2">Project 2 (coming soon)</h3>
-        <p class="text-zinc-400">Description will go here...</p>
+
+      <div class="project-card reveal">
+        <div class="project-num">02 — upcoming</div>
+        <div class="project-name">Project Two</div>
+        <p class="project-desc">Description coming soon. Something big is being built from Termux.</p>
+        <span class="project-tag">In Progress</span>
+      </div>
+
+      <div class="project-card reveal">
+        <div class="project-num">03 — upcoming</div>
+        <div class="project-name">Project Three</div>
+        <p class="project-desc">Another idea in the pipeline. Stay tuned.</p>
+        <span class="project-tag">Planned</span>
       </div>
     </div>
   </section>
 
-<section id="bots" class="bg-zinc-900 py-20">
-    <div class="max-w-4xl mx-auto px-6">
-      <h2 class="text-4xl font-bold mb-12 text-center">My Bots</h2>
-      <div class="grid md:grid-cols-3 gap-6">
+  <!-- BOTS -->
+  <section id="bots">
+    <p class="section-eyebrow reveal">deployments</p>
+    <h2 class="section-title reveal">My Bots</h2>
 
-<!-- === YOUR TELEGRAM BOT (Pius' bot) === -->
-        <div class="bg-black p-6 rounded-2xl text-center">
-          <h3 class="font-semibold text-emerald-400 text-2xl">Pius' bot</h3>
-          <p class="text-sm text-zinc-400 mt-2 mb-6">Telegram Bot</p>
-          
-          <!-- CHANGE THIS TO YOUR REAL LINK (no apostrophe!) -->
-          <a href="https://t.me/Piusbot" 
-             target="_blank" 
-             class="mt-4 inline-block bg-emerald-500 hover:bg-emerald-600 px-8 py-3 rounded-full text-sm font-semibold">
-            🚀 Start Pius' bot on Telegram
-          </a>
+    <div class="bots-grid">
+      <div class="bot-card reveal">
+        <div class="bot-icon">🤖</div>
+        <div class="bot-platform">Telegram Bot</div>
+        <div class="bot-name">KHAOSDARK</div>
+        <p class="bot-desc">Pius' bot — intelligent, responsive, and always online. Start a conversation and see what it can do.</p>
+        <a href="https://t.me/khaosdark_bot" target="_blank" class="btn"><span>🚀 Launch on Telegram</span></a>
+      </div>
+
+      <!-- Placeholder for future bots -->
+      <div class="bot-card reveal" style="border-style: dashed; opacity: 0.4;">
+        <div class="bot-icon">＋</div>
+        <div class="bot-platform">More Coming</div>
+        <div class="bot-name" style="color: var(--muted);">NEXT BOT</div>
+        <p class="bot-desc">Another bot is in development. Check back soon.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="contact-inner">
+      <p class="section-eyebrow reveal">reach out</p>
+      <h2 class="section-title reveal">Contact</h2>
+
+      <p class="contact-lead reveal">
+        Have a project in mind? Want to collaborate?<br>
+        I'm always open to interesting ideas.
+      </p>
+
+      <div class="contact-grid">
+        <div class="contact-item reveal">
+          <div class="contact-label">Email</div>
+          <div class="contact-value">
+            <a href="mailto:khaosdarkfire@gmail.com">khaosdarkfire@gmail.com</a>
+          </div>
         </div>
-        <!-- Add more bots here later (just copy the block above) -->
-
+        <div class="contact-item reveal">
+          <div class="contact-label">Phone / WhatsApp</div>
+          <div class="contact-value">
+            <a href="tel:+256778701217">+256 778 701 217</a>
+          </div>
+        </div>
+        <div class="contact-item reveal">
+          <div class="contact-label">Telegram</div>
+          <div class="contact-value">
+            <a href="https://t.me/khaosdark_bot" target="_blank">@khaosdark_bot</a>
+          </div>
+        </div>
       </div>
+
+      <a href="mailto:khaosdarkfire@gmail.com" class="btn reveal"><span>Send a Message →</span></a>
     </div>
   </section>
-  <footer class="bg-black py-8 text-center text-zinc-500 text-sm">
-    © 2026 Pius B.Henry • Built with Termux ❤️
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">© 2026 <span>Mastermind</span> — All rights reserved</div>
+    <div class="footer-right">Built with ❤️ on <span style="color:var(--green)">Termux</span> · Hosted on GitHub</div>
   </footer>
+
+  <script>
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+
+    // Typing effect in terminal
+    const lines = ['bots, automation, ideas'];
+    let charIndex = 0;
+    const typeTarget = document.querySelector('.terminal-body .t-white:last-of-type');
+    if (typeTarget) {
+      const full = typeTarget.textContent;
+      typeTarget.textContent = '';
+      setTimeout(() => {
+        const interval = setInterval(() => {
+          typeTarget.textContent = full.slice(0, charIndex++);
+          if (charIndex > full.length) clearInterval(interval);
+        }, 60);
+      }, 2000);
+    }
+  </script>
 </body>
 </html>
